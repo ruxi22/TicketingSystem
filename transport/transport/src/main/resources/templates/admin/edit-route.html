@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Route</title>
+</head>
+<body>
+<h1>Edit Route</h1>
+
+<form th:action="@{/admin/routes/edit/{id}(id=${route.id})}" method="post">
+    <div>
+        <label for="routeNumber">Route Number:</label>
+        <input type="text" id="routeNumber" name="routeNumber" th:value="${route.routeNumber}" required>
+    </div>
+    <div>
+        <label for="transportType">Transport Type:</label>
+        <select id="transportType" name="transportType" required>
+            <option value="BUS" th:selected="${route.transportType == 'BUS'}">Bus</option>
+            <option value="TRAIN" th:selected="${route.transportType == 'TRAIN'}">Train</option>
+            <option value="METRO" th:selected="${route.transportType == 'METRO'}">Metro</option>
+        </select>
+    </div>
+    <div>
+        <label for="departureLocation">Departure Location:</label>
+        <input type="text" id="departureLocation" name="departureLocation" th:value="${route.departureLocation}" required>
+    </div>
+    <div>
+        <label for="arrivalLocation">Arrival Location:</label>
+        <input type="text" id="arrivalLocation" name="arrivalLocation" th:value="${route.arrivalLocation}" required>
+    </div>
+    <div>
+        <label for="departureDate">Departure Date:</label>
+        <input type="date" id="departureDate" name="departureDate"
+               th:value="${#temporals.format(route.departureTime, 'yyyy-MM-dd')}" required>
+    </div>
+    <div>
+        <label for="departureTime">Departure Time:</label>
+        <input type="time" id="departureTime" name="departureTime"
+               th:value="${#temporals.format(route.departureTime, 'HH:mm')}" required>
+    </div>
+    <div>
+        <label for="arrivalDate">Arrival Date:</label>
+        <input type="date" id="arrivalDate" name="arrivalDate"
+               th:value="${#temporals.format(route.arrivalTime, 'yyyy-MM-dd')}" required>
+    </div>
+    <div>
+        <label for="arrivalTime">Arrival Time:</label>
+        <input type="time" id="arrivalTime" name="arrivalTime"
+               th:value="${#temporals.format(route.arrivalTime, 'HH:mm')}" required>
+    </div>
+    <div>
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" step="0.01" th:value="${route.price}" required>
+    </div>
+    <button type="submit">Update Route</button>
+    <a th:href="@{/admin/routes}">Cancel</a>
+</form>
+</body>
+</html>

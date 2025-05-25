@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>User Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar {
+      background: #1976d2;
+      color: #fff;
+      padding: 1em 2em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 1.5em;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2em auto;
+      background: #fff;
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    h2 {
+      color: #1976d2;
+    }
+    .actions {
+      margin-top: 2em;
+    }
+    .actions a {
+      display: inline-block;
+      margin-right: 1em;
+      padding: 0.5em 1.2em;
+      background: #1976d2;
+      color: #fff;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .actions a:hover {
+      background: #1565c0;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25em 0.6em;
+      font-size: 75%;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: baseline;
+      border-radius: 50%;
+      background-color: #f44336;
+      color: white;
+      margin-left: 5px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.4-next/lib/stomp.min.js"></script>
+</head>
+<body>
+<div class="navbar">
+  <span>User Dashboard</span>
+  <div>
+    <a th:href="@{/user/dashboard}">Home</a>
+    <a th:href="@{/user/notifications}" id="notification-link">Notifications <span class="badge" id="notification-badge">0</span></a>
+    <a th:href="@{/logout}">Logout</a>
+  </div>
+</div>
+<div class="container">
+  <h2>Welcome to the User Dashboard</h2>
+  <p>This is the user area. Here you can view your tickets, manage your travel card, and more.</p>
+  <div class="actions">
+    <a th:href="@{/user/purchased-tickets}">My Tickets</a>
+    <a th:href="@{/user/travelcard}">My Travel Card</a>
+    <a th:href="@{/user/notifications}">My Notifications</a>
+    <a th:href="@{/user/routes}">Search Routes</a>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  var socket = new SockJS('/ws');
+  var stompClient = Stomp.over(socket);
+  var notificationCount = 0;
+
+  stompClient.connect({}, function(frame) {
+      console.log('Connected: ' + frame);
+
+      // Subscribe to broadcast notifications
+      stompClient.subscribe('/topic/notifications', function(notification) {
+          updateNotificationBadge();
+      });
+
+      // Subscribe to user-specific notifications
+      stompClient.subscribe('/user/queue/notifications', function(notification) {
+          updateNotificationBadge();
+      });
+  });
+
+  function updateNotificationBadge() {
+      notificationCount++;
+      document.getElementById('notification-badge').textContent = notificationCount;
+  }
+
+  // Load initial count
+  fetch('/user/notifications/data')
+      .then(response => response.json())
+      .then(data => {
+          notificationCount = data.length;
+          document.getElementById('notification-badge').textContent = notificationCount;
+      });
+</script>
+</body>
+</html>

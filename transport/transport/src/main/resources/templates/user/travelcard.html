@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Travel Card</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #f4f6f8;
+          margin: 0;
+          padding: 0;
+        }
+        .navbar {
+          background: #1976d2;
+          color: #fff;
+          padding: 1em 2em;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .navbar a {
+          color: #fff;
+          text-decoration: none;
+          margin-left: 1.5em;
+          font-weight: bold;
+        }
+        .container {
+          max-width: 600px;
+          margin: 2em auto;
+          background: #fff;
+          padding: 2em;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h2 {
+          color: #1976d2;
+        }
+        .card-info {
+          margin-top: 2em;
+          padding: 1.5em;
+          background: #e3f2fd;
+          border-radius: 6px;
+        }
+        .card-info p {
+          font-size: 1.2em;
+          margin: 0.5em 0;
+        }
+        .actions {
+          margin-top: 2em;
+        }
+        .actions a {
+          display: inline-block;
+          margin-right: 1em;
+          padding: 0.5em 1.2em;
+          background: #1976d2;
+          color: #fff;
+          border-radius: 4px;
+          text-decoration: none;
+          transition: background 0.2s;
+        }
+        .actions a:hover {
+          background: #1565c0;
+        }
+        .add-money-form {
+          margin-top: 1.5em;
+        }
+        .add-money-form input[type="number"] {
+          padding: 0.4em;
+          border-radius: 4px;
+          border: 1px solid #bdbdbd;
+          width: 120px;
+        }
+        .add-money-form button {
+          margin-left: 1em;
+          padding: 0.4em 1em;
+          background: #388e3c;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .add-money-form button:hover {
+          background: #2e7d32;
+        }
+        .fees-section {
+          margin-top: 2em;
+          padding: 1em;
+          background: #fff3e0;
+          border-radius: 6px;
+          color: #e65100;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <span>My Travel Card</span>
+    <div>
+        <a th:href="@{/user/dashboard}">Home</a>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <h2>Travel Card Details</h2>
+    <div class="card-info">
+        <p><strong>Card ID:</strong> <span th:text="${travelCard.id}"></span></p>
+        <p><strong>Balance:</strong> $<span th:text="${travelCard.balance}"></span></p>
+        <p><strong>User ID:</strong> <span th:text="${travelCard.user.id}"></span></p>
+        <!-- Add Money Form -->
+        <form class="add-money-form" th:action="@{/user/travelcard/add-money}" method="post">
+            <label>
+                Add Amount: $
+                <input type="number" name="amount" min="1" step="0.01" required>
+            </label>
+            <button type="submit">Add Money</button>
+        </form>
+
+    </div>
+
+    <div class="actions">
+        <a th:href="@{/user/dashboard}">Back to Dashboard</a>
+    </div>
+</div>
+</body>
+</html>

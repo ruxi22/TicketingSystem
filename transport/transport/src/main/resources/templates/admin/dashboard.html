@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #f4f6f8;
+          margin: 0;
+          padding: 0;
+        }
+        .navbar {
+          background: #d32f2f;
+          color: #fff;
+          padding: 1em 2em;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .navbar a {
+          color: #fff;
+          text-decoration: none;
+          margin-left: 1.5em;
+          font-weight: bold;
+        }
+        .container {
+          max-width: 800px;
+          margin: 2em auto;
+          background: #fff;
+          padding: 2em;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h2 {
+          color: #d32f2f;
+        }
+        .actions {
+          margin-top: 2em;
+        }
+        .actions a {
+          display: inline-block;
+          margin-right: 1em;
+          padding: 0.5em 1.2em;
+          background: #d32f2f;
+          color: #fff;
+          border-radius: 4px;
+          text-decoration: none;
+          transition: background 0.2s;
+        }
+        .actions a:hover {
+          background: #b71c1c;
+        }
+        .notification {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #4caf50;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 4px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+          z-index: 1000;
+        }
+    </style>
+    <!-- Include WebSocket libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.4-next/lib/stomp.min.js"></script>
+
+    <!-- Include admin dashboard JavaScript directly -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Admin dashboard loaded');
+
+            // Initialize WebSocket connection
+            var socket = new SockJS('/ws');
+            var stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function(frame) {
+                console.log('Connected to WebSocket: ' + frame);
+
+                // Subscribe to route updates
+                stompClient.subscribe('/topic/routes', function(routeMessage) {
+                    try {
+                        var route = JSON.parse(routeMessage.body);
+                        console.log('Received route update:', route);
+                        updateRouteInTable(route);
+                        showNotification('Route updated successfully');
+                    } catch (error) {
+                        console.error('Error processing route update:', error);
+                    }
+                });
+            }, function(error) {
+                console.error('STOMP error:', error);
+            });
+
+            // Function to show notification
+            function showNotification(message) {
+                var notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                // Auto remove after 3 seconds
+                setTimeout(function() {
+                    notification.remove();
+                }, 3000);
+            }
+
+            // Function to update a route in the table
+            function updateRouteInTable(route) {
+                var row = document.querySelector('tr[data-route-id="' + route.id + '"]');
+                if (row) {
+                    row.querySelector('.departure-location').textContent = route.departureLocation;
+                    row.querySelector('.arrival-location').textContent = route.arrivalLocation;
+                    row.querySelector('.departure-time').textContent = formatDateTime(route.departureTime);
+                    row.querySelector('.transport-type').textContent = route.transportType;
+                    row.querySelector('.price').textContent = route.price;
+                }
+            }
+
+            // Helper function to format date time
+            function formatDateTime(dateTimeStr) {
+                if (!dateTimeStr) return '';
+                var date = new Date(dateTimeStr);
+                return date.toLocaleString();
+            }
+        });
+    </script>
+</head>
+<body>
+<div class="navbar">
+    <span>Admin Dashboard</span>
+    <div>
+        <a th:href="@{/admin/dashboard}">Home</a>
+        <a th:href="@{/admin/notifications}">Manage Notifications</a>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <h2>Welcome to the Admin Dashboard</h2>
+    <p>This is the admin area. Here you can configure the system: create, update and deactivate routes, and also create alerts/notifications.</p>
+    <div class="actions">
+        <a th:href="@{/admin/routes}">Manage Schedules</a>
+        <a th:href="@{/admin/notifications}">Notification System</a>
+    </div>
+</div>
+</body>
+</html>

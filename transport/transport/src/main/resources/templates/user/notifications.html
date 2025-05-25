@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Notifications</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.4-next/lib/stomp.min.js"></script>
+</head>
+<body>
+<div class="container mt-4">
+    <h1>My Notifications</h1>
+
+    <div id="notification-alert" class="alert alert-info d-none" role="alert">
+        You have a new notification!
+    </div>
+
+    <div class="list-group" id="notification-list">
+        <div th:each="notification : ${notifications}" class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1" th:text="${notification.title}">Notification Title</h5>
+                <small th:text="${#temporals.format(notification.scheduledTime, 'dd-MM-yyyy HH:mm:ss')}">Time</small>
+            </div>
+            <p class="mb-1" th:text="${notification.message}">Notification message goes here</p>
+        </div>
+    </div>
+
+    <a href="/user/dashboard" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+
+<script th:inline="javascript">
+    var socket = new SockJS('/ws');
+    var stompClient = Stomp.over(socket);
+    var username = [[${#authentication.principal.username}]];
+
+    stompClient.connect({}, function(frame) {
+        console.log('Connected: ' + frame);
+
+        // Subscribe to broadcast notifications
+        stompClient.subscribe('/topic/notifications', function(notification) {
+            showNewNotification(JSON.parse(notification.body));
+        });
+
+        // Subscribe to user-specific notifications
+        stompClient.subscribe('/user/queue/notifications', function(notification) {
+            showNewNotification(JSON.parse(notification.body));
+        });
+    });
+
+    function showNewNotification(notification) {
+        // Show alert
+        var alertElement = document.getElementById('notification-alert');
+        alertElement.classList.remove('d-none');
+
+        // Add to list
+        var notificationList = document.getElementById('notification-list');
+        var notificationElement = document.createElement('div');
+        notificationElement.className = 'list-group-item';
+        notificationElement.innerHTML = `
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">${notification.title}</h5>
+                <small>${formatDate(notification.scheduledTime)}</small>
+            </div>
+            <p class="mb-1">${notification.message}</p>
+        `;
+
+        notificationList.prepend(notificationElement);
+
+        // Play sound
+        var audio = new Audio('/notification-sound.mp3');
+        audio.play();
+    }
+
+    function formatDate(dateString) {
+        var date = new Date(dateString);
+        return date.toLocaleString();
+    }
+</script>
+</body>
+</html>

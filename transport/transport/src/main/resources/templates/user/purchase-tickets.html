@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Tickets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: #1976d2;
+            color: #fff;
+            padding: 1em 2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 1.5em;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2em auto;
+            background: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h2 {
+            color: #1976d2;
+            margin-bottom: 1em;
+        }
+        .tickets-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tickets-list th, .tickets-list td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .tickets-list th {
+            background-color: #f2f2f2;
+        }
+        .download-btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #757575;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <span>My Tickets</span>
+    <div>
+        <a th:href="@{/user/dashboard}">Home</a>
+        <a th:href="@{/user/notifications}">Notifications</a>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <h2>My Tickets</h2>
+
+    <div th:if="${tickets.isEmpty()}" class="empty-message">
+        <p>You don't have any tickets yet. Browse available routes to make a purchase.</p>
+        <a th:href="@{/user/routes}" class="download-btn">Browse Routes</a>
+    </div>
+
+    <table th:if="${!tickets.isEmpty()}" class="tickets-list">
+        <thead>
+        <tr>
+            <th>Ticket ID</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Transport Type</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ticket : ${tickets}">
+            <td th:text="${ticket.id}"></td>
+            <td th:text="${ticket.route.departureLocation}"></td>
+            <td th:text="${ticket.route.arrivalLocation}"></td>
+            <td th:text="${#temporals.format(ticket.route.departureTime, 'yyyy-MM-dd')}"></td>
+            <td th:text="${#temporals.format(ticket.route.departureTime, 'HH:mm')}"></td>
+            <td th:text="${ticket.route.transportType}"></td>
+            <td th:text="${ticket.price}"></td>
+            <td>
+                <a th:href="@{/user/tickets/{id}/download(id=${ticket.id})}" class="download-btn">Download PDF</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

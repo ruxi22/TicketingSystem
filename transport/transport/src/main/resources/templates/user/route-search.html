@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Search Routes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: #1976d2;
+            color: #fff;
+            padding: 1em 2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 1.5em;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2em auto;
+            background: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h2 {
+            color: #1976d2;
+            margin-bottom: 1.5em;
+        }
+        .search-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5em;
+            margin-bottom: 2em;
+        }
+        .search-form .full-width {
+            grid-column: span 2;
+        }
+        .form-group {
+            margin-bottom: 1em;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.6em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-btn {
+            grid-column: span 2;
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 0.7em;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        .search-btn:hover {
+            background: #1565c0;
+        }
+        .route-card {
+            border: 1px solid #ddd;
+            padding: 1.5em;
+            margin-bottom: 1em;
+            border-radius: 4px;
+            position: relative;
+        }
+        .transport-type {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            padding: 0.3em 0.6em;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .transport-type.train {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        .transport-type.bus {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+        .transport-type.metro {
+            background-color: #ede7f6;
+            color: #4527a0;
+        }
+        .route-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1em;
+        }
+        .purchase-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .purchase-btn:hover {
+            background: #43a047;
+        }
+        .error-message {
+            color: #d32f2f;
+            padding: 1em;
+            background: #ffebee;
+            border-radius: 4px;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <span>User Dashboard</span>
+    <div>
+        <a th:href="@{/user/dashboard}">Home</a>
+        <a th:href="@{/user/tickets}">My Tickets</a>
+        <a th:href="@{/user/travelcard}">My Travel Card</a>
+        <a th:href="@{/user/notifications}" id="notification-link">Notifications</a>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <h2>Search Transport Routes</h2>
+
+    <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></div>
+
+    <form class="search-form" th:action="@{/user/routes/search}" method="get">
+        <div class="form-group">
+            <label for="departure">From</label>
+            <input type="text" id="departure" name="departure" th:value="${departure}" required>
+        </div>
+        <div class="form-group">
+            <label for="arrival">To</label>
+            <input type="text" id="arrival" name="arrival" th:value="${arrival}" required>
+        </div>
+        <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" th:value="${date}" th:min="${today}" required>
+        </div>
+        <div class="form-group">
+            <label for="transportType">Transport Type</label>
+            <select id="transportType" name="transportType">
+                <option value="ALL" th:selected="${transportType == null || transportType == 'ALL'}">All Types</option>
+                <option value="TRAIN" th:selected="${transportType == 'TRAIN'}">Train</option>
+                <option value="BUS" th:selected="${transportType == 'BUS'}">Bus</option>
+                <option value="METRO" th:selected="${transportType == 'METRO'}">Metro</option>
+            </select>
+        </div>
+        <button type="submit" class="search-btn">Search Routes</button>
+    </form>
+
+    <div th:if="${routes != null && !routes.empty}">
+        <h3>Available Routes</h3>
+        <div th:each="route : ${routes}" class="route-card">
+            <div th:class="'transport-type ' + ${#strings.toLowerCase(route.transportType)}" th:text="${route.transportType}"></div>
+            <div class="route-info">
+                <div>
+                    <h4 th:text="${route.routeNumber + ': ' + route.departureLocation + ' → ' + route.arrivalLocation}"></h4>
+                    <p th:text="${#temporals.format(route.departureTime, 'HH:mm')} + ' → ' + ${#temporals.format(route.arrivalTime, 'HH:mm')}"></p>
+                    <p th:text="'Duration: ' + ${route.durationMinutes} + ' minutes'"></p>
+                </div>
+                <div>
+                    <p th:text="'Price: €' + ${route.price}"></p>
+                    <form th:action="@{/user/tickets/purchase/{routeId}(routeId=${route.id})}" method="post">
+                        <button type="submit" class="purchase-btn">Purchase Ticket</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:if="${multiRoutes != null}">
+        <div th:each="multi : ${multiRoutes}" class="route-card">
+            <strong th:text="${multi.name}"></strong> –
+            <span th:text="'€' + ${multi.totalPrice}"></span>
+
+            <ul>
+                <li th:each="seg : ${multi.segments}">
+                    <span th:text="${seg.transportType}"></span>:
+                    <span th:text="${seg.departureLocation}"></span> →
+                    <span th:text="${seg.arrivalLocation}"></span>
+                    (<span th:text="${#temporals.format(seg.departureTime, 'HH:mm')}"></span> →
+                    <span th:text="${#temporals.format(seg.arrivalTime, 'HH:mm')}"></span>)
+
+                </li>
+            </ul>
+            <form th:action="@{/user/routes/multi/{id}/confirm(id=${multi.id})}" method="post">
+                <button type="submit" class="purchase-btn">Purchase Ticket</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div th:if="${(routes == null or routes.empty) and (multiRoutes == null or multiRoutes.empty)}">
+        <p>No routes found for your search criteria. Please try different parameters.</p>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ticket Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: #1976d2;
+            color: #fff;
+            padding: 1em 2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 1.5em;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 600px;
+            margin: 2em auto;
+            background: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h2 {
+            color: #1976d2;
+            text-align: center;
+        }
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .ticket {
+            border: 2px solid #1976d2;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .ticket-header {
+            background: #1976d2;
+            color: white;
+            padding: 10px;
+            margin: -20px -20px 15px -20px;
+            border-radius: 6px 6px 0 0;
+        }
+        .ticket-details {
+            margin-bottom: 20px;
+        }
+        .ticket-details p {
+            margin: 5px 0;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .btn-download {
+            background: #4caf50;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <span>Ticket Details</span>
+    <div>
+        <a th:href="@{/user/dashboard}">Home</a>
+        <a th:href="@{/user/tickets}">My Tickets</a>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div th:if="${success}" class="success-message">
+        <p th:text="${success}"></p>
+    </div>
+
+    <div class="ticket">
+        <div class="ticket-header">
+            <h2>E-Ticket</h2>
+        </div>
+
+        <div class="ticket-details">
+            <p><strong>Ticket ID:</strong> <span th:text="${ticket.id}"></span></p>
+            <p><strong>From:</strong> <span th:text="${ticket.route.departureLocation}"></span></p>
+            <p><strong>To:</strong> <span th:text="${ticket.route.arrivalLocation}"></span></p>
+            <p><strong>Date:</strong> <span th:text="${#temporals.format(ticket.route.departureTime, 'yyyy-MM-dd')}"></span></p>
+            <p><strong>Departure Time:</strong> <span th:text="${#temporals.format(ticket.route.departureTime, 'HH:mm')}"></span></p>
+            <p><strong>Transport Type:</strong> <span th:text="${ticket.route.transportType}"></span></p>
+            <p><strong>Price:</strong> <span th:text="${ticket.price}"></span></p>
+            <p><strong>Purchase Date:</strong> <span th:text="${#temporals.format(ticket.purchaseDateTime, 'yyyy-MM-dd HH:mm')}"></span></p>
+            <p><strong>Status:</strong> <span th:text="${ticket.ticketStatus}"></span></p>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a th:href="@{/user/tickets/{id}/download(id=${ticket.id})}" class="btn btn-download">Download PDF</a>
+        <a th:href="@{/user/tickets}" class="btn">My Tickets</a>
+    </div>
+</div>
+</body>
+</html>

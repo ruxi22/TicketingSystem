@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Routes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: #d32f2f;
+            color: #fff;
+            padding: 1em 2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 1.5em;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2em auto;
+            background: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h2 {
+            color: #d32f2f;
+            margin-bottom: 1em;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 2em;
+        }
+        .tab-button {
+            padding: 0.8em 1.5em;
+            background: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab-button.active {
+            background: #d32f2f;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5em;
+            margin-bottom: 2em;
+        }
+        .form-grid .full-width {
+            grid-column: span 2;
+        }
+        .form-group {
+            margin-bottom: 1em;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.6em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .day-checkbox {
+            display: inline-block;
+            margin-right: 1em;
+        }
+        .day-checkbox input {
+            margin-right: 0.4em;
+        }
+        .submit-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 0.8em 1.5em;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background: #b71c1c;
+        }
+        .routes-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .routes-table th, .routes-table td {
+            padding: 0.8em;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .routes-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        .action-btn {
+            padding: 0.4em 0.8em;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .action-btn.edit {
+            background: #1976d2;
+        }
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <span>Admin Dashboard</span>
+    <div>
+        <a th:href="@{/admin/dashboard}">Home</a>
+        <a th:href="@{/admin/routes}">Manage Routes</a>
+        <a th:href="@{/admin/notifications}">Manage Notifications</a>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <h2>Manage Transport Routes</h2>
+
+    <div class="tab-buttons">
+        <button class="tab-button active" onclick="showTab('routes-list')">Routes List</button>
+        <button class="tab-button" onclick="showTab('add-route')">Add Single Route</button>
+        <button class="tab-button" onclick="showTab('add-recurring')">Add Recurring Route</button>
+
+    </div>
+
+    <!-- Routes List Tab -->
+    <div id="routes-list" class="tab-content active">
+        <h3>Current Routes</h3>
+        <table class="routes-table">
+            <thead>
+            <tr>
+                <th>Route #</th>
+                <th>Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Duration</th>
+                <th>Price</th>
+                <th>Recurring</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="route : ${routes}">
+                <td th:text="${route.routeNumber}"></td>
+                <td th:text="${route.transportType}"></td>
+                <td th:text="${route.departureLocation}"></td>
+                <td th:text="${route.arrivalLocation}"></td>
+                <td th:text="${route.isRecurring ? 'Recurring' : #temporals.format(route.departureTime, 'dd-MM-yyyy HH:mm')}"></td>
+                <td th:text="${route.isRecurring ? 'Recurring' : #temporals.format(route.arrivalTime, 'dd-MM-yyyy HH:mm')}"></td>
+                <td th:text="${route.durationMinutes + ' min'}"></td>
+                <td th:text="${'€' + route.price}"></td>
+                <td th:text="${route.isRecurring ? route.recurringDays : 'No'}"></td>
+                <td>
+                    <a th:href="@{/admin/routes/edit/{id}(id=${route.id})}" class="action-btn edit">Edit</a>
+                    <td th:if="${route.active}">
+                        <span class="badge bg-success">Active</span>
+                        <a th:href="@{/admin/routes/toggle/{id}(id=${route.id})}" class="btn btn-warning btn-sm">Deactivate</a>
+                    </td>
+                    <td th:unless="${route.active}">
+                        <span class="badge bg-danger">Inactive</span>
+                        <a th:href="@{/admin/routes/toggle/{id}(id=${route.id})}" class="btn btn-success btn-sm">Activate</a>
+                    </td>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!<!-- Add Single Route Tab -->
+    <div id="add-route" class="tab-content">
+        <h3>Add Multi-Segment Route</h3>
+        <form th:action="@{/admin/routes/add}" method="post">
+            <div class="form-group full-width">
+                <label>Choose Transport Types</label>
+                <label><input type="checkbox" name="segments" value="BUS" onchange="toggleSegment('bus')"> Bus</label>
+                <label><input type="checkbox" name="segments" value="TRAIN" onchange="toggleSegment('train')"> Train</label>
+                <label><input type="checkbox" name="segments" value="METRO" onchange="toggleSegment('metro')"> Metro</label>
+            </div>
+
+            <!-- Bus Segment -->
+            <div id="segment-bus" class="transport-segment" style="display:none;">
+                <h4>Bus Segment</h4>
+                <div class="form-group">
+                    <label for="busFrom">From</label>
+                    <input type="text" id="busFrom" name="busFrom">
+                </div>
+                <div class="form-group">
+                    <label for="busTo">To</label>
+                    <input type="text" id="busTo" name="busTo">
+                </div>
+                <div class="form-group">
+                    <label for="busDepartureDate">Departure Date</label>
+                    <input type="date" id="busDepartureDate" name="busDepartureDate">
+                </div>
+                <div class="form-group">
+                    <label for="busDepartureTime">Departure Time</label>
+                    <input type="time" id="busDepartureTime" name="busDepartureTime">
+                </div>
+                <div class="form-group">
+                    <label for="busArrivalDate">Arrival Date</label>
+                    <input type="date" id="busArrivalDate" name="busArrivalDate">
+                </div>
+                <div class="form-group">
+                    <label for="busArrivalTime">Arrival Time</label>
+                    <input type="time" id="busArrivalTime" name="busArrivalTime">
+                </div>
+            </div>
+
+            <!-- Train Segment -->
+            <div id="segment-train" class="transport-segment" style="display:none;">
+                <h4>Train Segment</h4>
+                <div class="form-group">
+                    <label for="trainFrom">From</label>
+                    <input type="text" id="trainFrom" name="trainFrom">
+                </div>
+                <div class="form-group">
+                    <label for="trainTo">To</label>
+                    <input type="text" id="trainTo" name="trainTo">
+                </div>
+                <div class="form-group">
+                    <label for="trainDepartureDate">Departure Date</label>
+                    <input type="date" id="trainDepartureDate" name="trainDepartureDate">
+                </div>
+                <div class="form-group">
+                    <label for="trainDepartureTime">Departure Time</label>
+                    <input type="time" id="trainDepartureTime" name="trainDepartureTime">
+                </div>
+                <div class="form-group">
+                    <label for="trainArrivalDate">Arrival Date</label>
+                    <input type="date" id="trainArrivalDate" name="trainArrivalDate">
+                </div>
+                <div class="form-group">
+                    <label for="trainArrivalTime">Arrival Time</label>
+                    <input type="time" id="trainArrivalTime" name="trainArrivalTime">
+                </div>
+            </div>
+
+            <!-- Metro Segment -->
+            <div id="segment-metro" class="transport-segment" style="display:none;">
+                <h4>Metro Segment</h4>
+                <div class="form-group">
+                    <label for="metroFrom">From</label>
+                    <input type="text" id="metroFrom" name="metroFrom">
+                </div>
+                <div class="form-group">
+                    <label for="metroTo">To</label>
+                    <input type="text" id="metroTo" name="metroTo">
+                </div>
+                <div class="form-group">
+                    <label for="metroDepartureDate">Departure Date</label>
+                    <input type="date" id="metroDepartureDate" name="metroDepartureDate">
+                </div>
+                <div class="form-group">
+                    <label for="metroDepartureTime">Departure Time</label>
+                    <input type="time" id="metroDepartureTime" name="metroDepartureTime">
+                </div>
+                <div class="form-group">
+                    <label for="metroArrivalDate">Arrival Date</label>
+                    <input type="date" id="metroArrivalDate" name="metroArrivalDate">
+                </div>
+                <div class="form-group">
+                    <label for="metroArrivalTime">Arrival Time</label>
+                    <input type="time" id="metroArrivalTime" name="metroArrivalTime">
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="price">Total Price (€)</label>
+                <input type="number" id="price" name="price" step="0.01" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Add Route</button>
+        </form>
+    </div>
+
+
+    <!-- Add Recurring Route Tab -->
+    <div id="add-recurring" class="tab-content">
+        <h3>Add Recurring Route</h3>
+        <form th:action="@{/admin/routes/add-recurring}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="recRoutNumber">Route Number</label>
+                    <input type="text" id="recRoutNumber" name="routeNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="recTransType">Transport Type</label>
+                    <select id="recTransType" name="transportType" required>
+                        <option value="TRAIN">Train</option>
+                        <option value="BUS">Bus</option>
+                        <option value="METRO">Metro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="recDepartLoc">From</label>
+                    <input type="text" id="recDepartLoc" name="departureLocation" required>
+                </div>
+                <div class="form-group">
+                    <label for="recArrivalLoc">To</label>
+                    <input type="text" id="recArrivalLoc" name="arrivalLocation" required>
+                </div>
+                <div class="form-group">
+                    <label for="recDepartTime">Departure Time</label>
+                    <input type="time" id="recDepartTime" name="departureTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="recArrivalTime">Arrival Time</label>
+                    <input type="time" id="recArrivalTime" name="arrivalTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="recPrice">Price (€)</label>
+                    <input type="number" id="recPrice" name="price" step="0.01" required>
+                </div>
+                <div class="form-group full-width">
+                    <label>Recurring Days</label>
+                    <div>
+                        <label class="day-checkbox"><input type="checkbox" name="days" value="MONDAY"> Monday</label>
+                        <label class="day-checkbox"><input type="checkbox" name="days" value="TUESDAY"> Tuesday</label>
+                        <label class="day-checkbox"><input type="checkbox" name="days" value="WEDNESDAY"> Wednesday</label>
+                        <label class="day-checkbox"><input type="checkbox" name="days" value="THURSDAY"> Thursday</label>
+                        <label class="day-checkbox"><input type="checkbox" name="days" value="FRIDAY"> Friday</label>
+                        <label class="day-checkbox"><input type="checkbox" name="days" value="SATURDAY"> Saturday</label>
+                        <label class="day-checkbox"><input type="checkbox" name="days" value="SUNDAY"> Sunday</label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Add Recurring Route</button>
+        </form>
+    </div>
+
+    <!-- Initialize Sample Data Tab -->
+    <div id="initialize-sample" class="tab-content">
+        <h3>Initialize Sample Routes</h3>
+        <p>Click the button below to initialize the system with sample routes for demonstration purposes. This will clear any existing routes.</p>
+        <form th:action="@{/admin/routes/initialize}" method="get">
+            <button type="submit" class="submit-btn">Initialize Sample Routes</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showTab(tabId) {
+       // Hide all tab content
+       document.querySelectorAll('.tab-content').forEach(el => {
+           el.classList.remove('active');
+       });
+
+       // Remove active class from all buttons
+       document.querySelectorAll('.tab-button').forEach(btn => {
+           btn.classList.remove('active');
+       });
+
+       // Show the selected tab
+       document.getElementById(tabId).classList.add('active');
+
+       // Highlight the button that was clicked
+       document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`)?.classList.add('active');
+   }
+   document.addEventListener('DOMContentLoaded', function() {
+       console.log('Admin routes page loaded');
+
+       // Initialize WebSocket connection
+       var socket = new SockJS('/ws');
+       var stompClient = Stomp.over(socket);
+
+       stompClient.connect({}, function(frame) {
+           console.log('Connected to WebSocket: ' + frame);
+
+           // Subscribe to route updates
+           stompClient.subscribe('/topic/routes', function(routeMessage) {
+               try {
+                   var route = JSON.parse(routeMessage.body);
+                   console.log('Received route update:', route);
+                   updateRouteInTable(route);
+                   showNotification('Route updated successfully');
+               } catch (error) {
+                   console.error('Error processing route update:', error);
+               }
+           });
+       });
+
+       // Setup edit button handlers
+       setupRouteEditHandlers();
+
+       function setupRouteEditHandlers() {
+           var editButtons = document.querySelectorAll('.edit-route-btn');
+           editButtons.forEach(function(button) {
+               button.addEventListener('click', function(e) {
+                   e.preventDefault();
+                   var routeId = this.getAttribute('data-route-id');
+                   var editForm = document.querySelector('#edit-form-' + routeId);
+
+                   if (editForm.style.display === 'none' || !editForm.style.display) {
+                       editForm.style.display = 'block';
+                   } else {
+                       editForm.style.display = 'none';
+                   }
+               });
+           });
+
+           var editForms = document.querySelectorAll('.route-edit-form');
+           editForms.forEach(function(form) {
+               form.addEventListener('submit', function(e) {
+                   e.preventDefault();
+                   var formData = new FormData(this);
+                   var routeId = this.getAttribute('data-route-id');
+
+                   fetch('/admin/routes/' + routeId + '/edit', {
+                       method: 'POST',
+                       body: formData
+                   })
+                   .then(response => {
+                       if (response.ok) {
+                           return response.json();
+                       }
+                       throw new Error('Network response was not ok');
+                   })
+                   .then(route => {
+                       // Send the updated route to all clients via WebSocket
+                       stompClient.send("/app/route-update", {}, JSON.stringify(route));
+                       // Hide the edit form
+                       this.style.display = 'none';
+                       showNotification('Route updated successfully');
+                   })
+                   .catch(error => {
+                       console.error('Error updating route:', error);
+                       showNotification('Error updating route: ' + error.message, 'error');
+                   });
+               });
+           });
+       }
+
+       // Function to update a route in the table
+       function updateRouteInTable(route) {
+           var row = document.querySelector('tr[data-route-id="' + route.id + '"]');
+           if (row) {
+               row.querySelector('.departure-location').textContent = route.departureLocation;
+               row.querySelector('.arrival-location').textContent = route.arrivalLocation;
+               row.querySelector('.departure-time').textContent = formatDateTime(route.departureTime);
+               row.querySelector('.transport-type').textContent = route.transportType;
+               row.querySelector('.price').textContent = route.price;
+           }
+       }
+
+       // Helper function to format date time
+       function formatDateTime(dateTimeStr) {
+           if (!dateTimeStr) return '';
+           var date = new Date(dateTimeStr);
+           return date.toLocaleString();
+       }
+
+       // Function to show notification
+       function showNotification(message, type) {
+           var notification = document.createElement('div');
+           notification.className = 'notification ' + (type || 'success');
+           notification.textContent = message;
+           notification.style.position = 'fixed';
+           notification.style.top = '20px';
+           notification.style.right = '20px';
+           notification.style.background = type === 'error' ? '#f44336' : '#4caf50';
+           notification.style.color = 'white';
+           notification.style.padding = '10px 20px';
+           notification.style.borderRadius = '4px';
+           notification.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+           notification.style.zIndex = '1000';
+           document.body.appendChild(notification);
+
+           setTimeout(function() {
+               notification.remove();
+           }, 3000);
+       }
+   });
+
+</script>
+<script>
+    function toggleSegment(type) {
+        const segmentId = 'segment-' + type.toLowerCase();
+        const segment = document.getElementById(segmentId);
+        const checkbox = document.querySelector(`input[value="${type.toUpperCase()}"]`);
+
+        if (checkbox && segment) {
+            segment.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        ['BUS', 'TRAIN', 'METRO'].forEach(type => {
+            const checkbox = document.querySelector(`input[value="${type}"]`);
+            if (checkbox && checkbox.checked) {
+                toggleSegment(type);
+            }
+
+            checkbox?.addEventListener('change', function () {
+                toggleSegment(type);
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

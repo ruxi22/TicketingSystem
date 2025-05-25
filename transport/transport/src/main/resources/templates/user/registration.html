@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .register-container {
+            width: 500px;
+            background: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h2 {
+            color: #1976d2;
+            margin-bottom: 1em;
+            text-align: center;
+        }
+        h3 {
+            color: #333;
+            margin-top: 1.5em;
+            margin-bottom: 1em;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .payment-options {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .payment-method {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .payment-method:hover {
+            background-color: #f9f9f9;
+        }
+        .payment-method input {
+            margin-right: 10px;
+        }
+        .payment-method label {
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .payment-logo {
+            height: 30px;
+            margin-left: auto;
+        }
+        .card-details {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            background: #fcfcfc;
+            display: none;
+        }
+        .card-row {
+            display: flex;
+            gap: 20px;
+        }
+        .cvv-input {
+            width: 60px !important;
+        }
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <h2>Create an Account</h2>
+
+    <form th:action="@{/register}" method="post" th:object="${userDto}">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" th:field="*{name}" required />
+            <div th:if="${#fields.hasErrors('name')}" class="error-message" th:errors="*{name}"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="surname">Surname</label>
+            <input type="text" id="surname" th:field="*{surname}" required />
+            <div th:if="${#fields.hasErrors('surname')}" class="error-message" th:errors="*{surname}"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" th:field="*{email}" required />
+            <div th:if="${#fields.hasErrors('email')}" class="error-message" th:errors="*{email}"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" th:field="*{username}" required />
+            <div th:if="${#fields.hasErrors('username')}" class="error-message" th:errors="*{username}"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" th:field="*{password}" required />
+            <div th:if="${#fields.hasErrors('password')}" class="error-message" th:errors="*{password}"></div>
+        </div>
+
+        <div class="payment-options">
+            <h3>Payment Method</h3>
+            <p style="margin-top: -10px; color: #666; font-size: 14px;">
+                Select how you'd like to pay when topping up your travel card.
+            </p>
+
+
+            <div class="payment-method">
+                <input type="radio" id="applePayOption" th:field="*{paymentMethod}" value="APPLE_PAY" />
+                <label for="applePayOption">Apple Pay</label>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Apple_Pay_logo.svg/1200px-Apple_Pay_logo.svg.png" alt="Apple Pay" class="payment-logo" />
+            </div>
+
+            <div class="payment-method">
+                <input type="radio" id="googlePayOption" th:field="*{paymentMethod}" value="GOOGLE_PAY" />
+                <label for="googlePayOption">Google Pay</label>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/1200px-Google_Pay_Logo.svg.png" alt="Google Pay" class="payment-logo" />
+            </div>
+
+            <div class="payment-method">
+                <input type="radio" id="creditCardOption" th:field="*{paymentMethod}" value="CREDIT_CARD" />
+                <label for="creditCardOption">Credit / Debit Card</label>
+                <img src="https://cdn-icons-png.flaticon.com/512/179/179457.png" alt="Credit Card" class="payment-logo" />
+
+                <div class="card-details">
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" th:field="*{cardNumber}" placeholder="1234 5678 9012 3456" />
+                        <div th:if="${#fields.hasErrors('cardNumber')}" class="error-message" th:errors="*{cardNumber}"></div>
+                    </div>
+
+                    <div class="card-row">
+                        <div class="form-group">
+                            <label for="expiryMonth">Expiry Date</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="expiryMonth" th:field="*{expiryMonth}" placeholder="MM" maxlength="2" />
+                                <span style="align-self: center;">/</span>
+                                <input type="text" id="expiryYear" th:field="*{expiryYear}" placeholder="YY" maxlength="2" />
+                            </div>
+                            <div th:if="${#fields.hasErrors('expiryMonth')}" class="error-message" th:errors="*{expiryMonth}"></div>
+                            <div th:if="${#fields.hasErrors('expiryYear')}" class="error-message" th:errors="*{expiryYear}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" th:field="*{cvv}" placeholder="123" maxlength="3" class="cvv-input" />
+                            <div th:if="${#fields.hasErrors('cvv')}" class="error-message" th:errors="*{cvv}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 20px;">
+            <button type="submit">Register</button>
+            <a href="/login" class="login-link" style="color: #1976d2; text-decoration: none; margin-left: 10px;">Already have an account? Log in</a>
+        </div>
+
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+    </form>
+</div>
+
+<script>
+    // Show/hide credit card details when the credit card option is selected
+    document.getElementById('creditCardOption').addEventListener('change', function() {
+        document.querySelector('.card-details').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Hide credit card details when other payment options are selected
+    document.getElementById('applePayOption').addEventListener('change', function() {
+        document.querySelector('.card-details').style.display = 'none';
+    });
+
+    document.getElementById('googlePayOption').addEventListener('change', function() {
+        document.querySelector('.card-details').style.display = 'none';
+    });
+
+    // Initialize card details visibility based on saved selection
+    window.onload = function() {
+        if (document.getElementById('creditCardOption').checked) {
+            document.querySelector('.card-details').style.display = 'block';
+        } else {
+            // Default to first option if nothing selected
+            document.getElementById('applePayOption').checked = true;
+        }
+    };
+</script>
+</body>
+</html>
